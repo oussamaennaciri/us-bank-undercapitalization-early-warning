@@ -1,0 +1,45 @@
+# ---- Secrets ----------------------------------------------------------------
+scripts/key.txt
+.env
+
+# ---- Data (16 GB; all of it is re-downloadable via scripts/) ----------------
+data/
+complaints.csv
+*.parquet
+
+# ---- Course materials (not my work; Regis / instructor property) ------------
+MSDS696_Syllabus_Revised.docx
+Reference Documents/
+Week 1/Misc/
+**/MSDS696_Wk*_Deck.pptx
+**/MSDS696_Wk*_Deck.pdf
+**/MSDS696_Wk*_ToDo.html
+**/MSDS696_Wk*_PodLabBrief.html
+**/Table of Contents.html
+*.mp4
+
+# ---- Literature PDFs (copyrighted journal articles; notes are kept) ---------
+literature/*.pdf
+bank-data-guide.pdf
+
+# ---- LaTeX build artifacts --------------------------------------------------
+*.aux
+*.log
+*.out
+*.toc
+*.nav
+*.snm
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+
+# ---- Python / Jupyter -------------------------------------------------------
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+.venv/
+venv/
+
+# ---- OS / editor ------------------------------------------------------------
+.DS_Store
+.vscode/

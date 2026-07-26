@@ -1,0 +1,59 @@
+\documentclass[aspectratio=169,11pt,t]{beamer}
+
+% ---------- Style: matches the Week 1 deck (navy, Palatino body, Helvetica labels) ----------
+\usepackage[T1]{fontenc}
+\usepackage{mathpazo}
+\usepackage{helvet}
+
+\definecolor{navy}{HTML}{1F3864}
+\definecolor{midgray}{HTML}{595959}
+\definecolor{hairline}{HTML}{C8C8C8}
+
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{itemize items}{\textcolor{navy}{\footnotesize\textbullet}}
+\setbeamercolor{normal text}{fg=black}
+\setbeamercolor{structure}{fg=navy}
+\usefonttheme{serif}
+
+\setbeamertemplate{footline}{%
+  \hspace{0.45cm}{\sffamily\fontsize{6.5}{8}\selectfont\color{midgray}ENNACIRI \textbar\ DATA-FIT NOTE \textbar\ WEEK 2 POD LAB \textbar\ JULY 2026}%
+  \hfill{\sffamily\fontsize{6.5}{8}\selectfont\color{midgray}\insertframenumber\ OF \inserttotalframenumber}\hspace{0.45cm}\vspace{0.25cm}}
+
+\newcommand{\slidelabel}[1]{%
+  {\sffamily\bfseries\fontsize{10}{13}\selectfont\color{navy}\MakeUppercase{#1}}\par
+  \vspace{-6pt}\textcolor{hairline}{\rule{\textwidth}{0.5pt}}\par\vspace{3pt}}
+
+\newcommand{\blocklabel}[1]{{\sffamily\bfseries\fontsize{8.5}{11}\selectfont\color{navy}\MakeUppercase{#1}}\par\vspace{2pt}}
+
+\begin{document}
+
+\begin{frame}
+  \slidelabel{Data-fit note: FDIC quarterly data vs.\ my question}
+
+  \begin{columns}[t]
+    \begin{column}{0.47\textwidth}
+      \blocklabel{Provenance}
+      {\fontsize{8.4}{10.4}\selectfont The data comes directly from the FDIC's public BankFind Suite API, the primary source behind all FDIC bank data products.}\par\vspace{5pt}
+
+      \blocklabel{Fit: can answer}
+      {\fontsize{8.4}{10.4}\selectfont The question directly: the dataset contains the exact capital ratios regulators use to classify a bank as undercapitalized (the PCA ratios).}\par\vspace{5pt}
+
+      \blocklabel{Fit: can't answer}
+      {\fontsize{8.4}{10.4}\selectfont Anything that happens faster than a quarter, and anything banks omit or don't report, such as confidential supervisory information or fraud.}
+    \end{column}
+    \begin{column}{0.47\textwidth}
+      \blocklabel{Three limitations}
+      {\fontsize{8.4}{10.4}\selectfont
+      \begin{enumerate}\itemsep=2pt
+        \item \textbf{Quarterly lag}: snapshots every three months; fast collapses like SVB's 48-hour run happen between filings. The model catches slow slides, not overnight runs.
+        \item \textbf{Rare target}: becoming undercapitalized is uncommon, so classes are severely imbalanced; the evaluation metric must be chosen for rare events.
+        \item \textbf{Self-reported data}: call reports are filed by the banks themselves; a bank concealing problems can look healthy until it isn't.
+      \end{enumerate}}
+    \end{column}
+  \end{columns}
+  \vspace{2pt}
+  \textcolor{hairline}{\rule{\textwidth}{0.5pt}}\par\vspace{2pt}
+  {\sffamily\bfseries\fontsize{8.5}{11}\selectfont\color{navy}DECISION\quad}{\fontsize{8.6}{10.6}\selectfont \textbf{Keep.} Quality data from a reliable source that answers the question as asked.}
+\end{frame}
+
+\end{document}
