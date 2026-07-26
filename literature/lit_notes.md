@@ -78,6 +78,7 @@ only full write-up; this section covers what each paper **did**, not what it fou
 | Martin/Puri/Ufier 2018 | LPM baseline; probit and **Cox proportional hazard** as robustness | Placebo period (2006) | Coefficients, hazard ratios |
 | Petropoulos et al. 2020 | **Random Forest** vs logit, LDA, SVM, neural net, CRF | **Out-of-sample AND out-of-time** (2013–14) | AUROC, G-mean, balanced accuracy, Youden, weighted BA |
 | Correia/Luck/Verner 2024 | Logit / LPM, 5 terms incl. **one interaction** | **Expanding window**, retrained each year | AUC + **PR-AUC as a multiple of the base rate** |
+| Carmona/Climent/Momparler 2018 | **XGBoost** on a matched 50/50 sample | Random 75/25 holdout + k-fold CV | AUC (0.98) |
 | Chu et al. (FDIC 2026) | Descriptive + regression on account-level run data | — | Run rates by depositor type |
 
 ## What this changes for my project
@@ -130,3 +131,52 @@ the unused `quarters_to_onset` column.
   (10% of good cases + all bad cases → ~12% positives), tuned there, then evaluated on the
   full, untouched distribution. Rebalancing on the training data only — the same rule as
   the Week 4 lecture.
+
+
+---
+
+## Paper 11 — Carmona, Climent & Momparler (2018), XGBoost for U.S. bank failure
+
+**Citation:** Carmona, Pedro, Francisco Climent, and Alexandre Momparler. 2018. "Predicting
+failure in the U.S. banking sector: An extreme gradient boosting approach." *International
+Review of Economics and Finance*. DOI 10.1016/j.iref.2018.03.008
+
+Added after the first modeling run. It matters because it is the **only paper in the folder
+that uses the method I chose**, on the same population.
+
+**Design**
+- Extreme gradient boosting (XGBoost) predicting failure of U.S. national commercial banks.
+- 2001–2015, **annual** series, 30 financial ratios (17 "performance", 13 "condition").
+- **156 banks**, built as a matched sample: every failed bank paired with a solvent bank of
+  similar total assets — so roughly 50/50, not a rare event.
+- Random 75/25 train/test holdout, with k-fold cross-validation for parameter tuning.
+- Reported AUC ≈ **0.98**; optimal tree count 149.
+
+**Their top predictors**
+- Retained earnings to average equity (low → higher failure risk)
+- Pretax return on assets (low → higher risk)
+- Total risk-based capital ratio (low → higher risk)
+- **Yield on earning assets (high → higher risk)** — reaching for yield as a distress signal.
+  This is the one candidate here that is *not* in my current 87 features.
+
+**What it gives me**
+
+1. **A citable precedent for the champion.** Gradient boosting on U.S. bank distress is now
+   peer-reviewed prior work, not an unsupported choice. Fills the gap in the Week 4 defense.
+
+2. **A rigour contrast, not a score to chase.** Their 0.98 comes from 156 banks, a balanced
+   50/50 sample, and a *random* split — no time separation at all, so a bank's 2009 and 2010
+   rows can sit on opposite sides of the boundary. My setup is 1.26M bank-quarters at a 0.34%
+   base rate, split by time with a four-quarter gap. The numbers are not comparable, and the
+   harder setup is mine. Worth stating explicitly rather than letting a reader assume I
+   underperformed.
+
+3. **The SCOR operational benchmark, quoted.** They cite Collier et al. (2003): the FDIC's own
+   off-site system misses **roughly two-thirds of actual downgrades**, and roughly two-thirds
+   of the banks it flags are never downgraded. That is the closest real-world bar for a
+   tier-drop model like mine, and a far more meaningful comparison than an AUC from a matched
+   sample.
+
+**Limitation worth noting when citing it:** the matched design answers "given a failed bank
+and a healthy one of the same size, can you tell them apart?" — not "which of 19,000 banks
+should a supervisor look at on Monday?" The second question is mine, and it is the harder one.
