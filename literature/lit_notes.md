@@ -57,3 +57,76 @@
 3. NPA composition (incl. OREO and past-due buckets) and brokered deposits confirmed as core features.
 4. Their asymmetric-cost ROC framing (miss vs false alarm) is the right evaluation story for a regulator/risk-officer audience.
 5. Their "technical failure" construct is a cousin of my undercapitalized label — both catch distress before the FDIC acts.
+
+---
+
+# Methods Synthesis — How Every Paper Modeled
+
+*Added after a full methodology pass over all 10 PDFs (July 2026). Paper 1 above is the
+only full write-up; this section covers what each paper **did**, not what it found.*
+
+## The table
+
+| Paper | Method | Validation | Metric |
+|---|---|---|---|
+| Cole & White 2012 | Logit, one cross-section per lag year (1–5 yrs) | 2008 model applied to 2010 failures | Type I / Type II tradeoff |
+| SCOR (Collier 2003) | Ordinal logit on **CAMELS downgrade** | **None** — sample too small for a holdout | Type I / Type II at a probability cutoff |
+| Nuxoll 2003 | Logit, with and without state economic data | Out-of-sample | Type I / Type II |
+| Curry et al. 2004 | Logit + hazard, adds equity-market variables | In- and out-of-sample, bootstrapped | Accuracy at 50% cutoff (matched sample) |
+| Oshinsky & Olin 2005 | **Multinomial logit — 4 outcomes** | Cohort observed 2 years forward | Accuracy by predicted state |
+| Maechler & McDill 2003 | Simultaneous-equation panel regression | Robustness across variable groupings | Coefficients |
+| Martin/Puri/Ufier 2018 | LPM baseline; probit and **Cox proportional hazard** as robustness | Placebo period (2006) | Coefficients, hazard ratios |
+| Petropoulos et al. 2020 | **Random Forest** vs logit, LDA, SVM, neural net, CRF | **Out-of-sample AND out-of-time** (2013–14) | AUROC, G-mean, balanced accuracy, Youden, weighted BA |
+| Correia/Luck/Verner 2024 | Logit / LPM, 5 terms incl. **one interaction** | **Expanding window**, retrained each year | AUC + **PR-AUC as a multiple of the base rate** |
+| Chu et al. (FDIC 2026) | Descriptive + regression on account-level run data | — | Run rates by depositor type |
+
+## What this changes for my project
+
+**1. Nuxoll's conclusion is the opposite of what I had written.**
+He tested exactly the question I assumed he supported — does adding economic data improve
+Call-Report-only failure forecasts — and found *"economic data do not improve these
+forecasts despite the fact that the data are statistically significant."* Oshinsky & Olin
+independently excluded economic variables by choice. My 11 FRED columns are therefore
+**not literature-backed**. They need their own with/without test, or they should go.
+(`features_by_dataset.md` has been corrected.)
+
+**2. A plain logit can capture "together" — if you name the pair.**
+Correia et al. reach out-of-sample AUC 0.94 on the modern sample with five terms:
+insolvency (net income/assets), noncore funding (time deposits + other borrowed money),
+**their interaction**, asset growth, and aggregate conditions. So the claim "only a complex
+model sees combinations" is wrong as stated. The defensible claim: a logit sees only the
+combinations specified in advance — with 54 features that is >1,400 candidate pairs, and
+tree ensembles find them without guessing. My logistic baseline must include a comparable
+interaction or the comparison is a strawman.
+
+**3. Lagged observations are standard; I have none.**
+Petropoulos feeds up to **2 years of lagged observations** per feature. My panel is one
+quarter per row — a still frame. My own EDA finding is a two-year decline, which a single
+snapshot cannot see by construction. Asset growth (Cole & White, Correia) is the minimum
+version of this.
+
+**4. Nobody uses accuracy.** Two live options: Type I / Type II at a chosen cutoff (the FDIC
+lineage — SCOR, Nuxoll, Cole & White), or PR-AUC reported against the base rate (Correia).
+Decision: PR-AUC to compare models, Type I / Type II to present the chosen one, since the
+audience is a risk committee that needs "how many do we miss."
+
+**5. Merger can be an outcome, not missing data.**
+Oshinsky & Olin predict four futures — recover, merge, stay a problem, fail — rather than
+yes/no. That is a real answer to my `near_merge_exit` censoring problem. Caveat: 69% of my
+panel banks merged, so merger as a class would be dominated by healthy consolidation.
+
+**6. Hazard models are the standard answer to "how soon."**
+Martin uses Cox; Curry references them. That is the unused half of my Week 1 question and
+the unused `quarters_to_onset` column.
+
+## Validation designs worth copying
+
+- **Petropoulos**: separates *out-of-sample* (different banks, same period) from
+  *out-of-time* (future period). Logit did fine out-of-sample and **worst in 6 of 8
+  criteria out-of-time** — a concrete precedent for a simple model degrading across eras.
+- **Correia**: expanding window — train on the first 10 years, predict year *t+1*, refit,
+  repeat. More realistic than one fixed split, and closer to how a supervisor would run it.
+- **Petropoulos on imbalance**: downsampled the majority to build a "short in-sample" set
+  (10% of good cases + all bad cases → ~12% positives), tuned there, then evaluated on the
+  full, untouched distribution. Rebalancing on the training data only — the same rule as
+  the Week 4 lecture.
