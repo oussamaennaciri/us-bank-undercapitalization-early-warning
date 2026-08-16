@@ -43,3 +43,14 @@ venv/
 # ---- OS / editor ------------------------------------------------------------
 .DS_Store
 .vscode/
+
+# ---- Build inputs for the reports and presentations -------------------------
+# The repo keeps the finished PDFs and their LaTeX sources. The generated figures
+# are rebuildable from notebooks/ and the Week 6 build script, so they are not
+# carried here; a fresh clone will not typeset until they are regenerated.
+figures/
+
+# ---- Working folders, kept locally only ------------------------------------
+Week 4/
+Week 5/
+Week 6/

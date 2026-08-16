@@ -1,0 +1,213 @@
+\documentclass[11pt,letterpaper]{article}
+
+% ---------- Typography: serif body, sans headings (institutional memo standard) ----------
+\usepackage[margin=1.05in,top=0.95in,bottom=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{mathpazo}            % Palatino body — the classic finance-document serif
+\usepackage{helvet}              % Helvetica for headings and labels only
+\usepackage{microtype}           % refined kerning and justification
+\usepackage{xcolor}
+\usepackage[colorlinks=true,urlcolor=navy,linkcolor=navy]{hyperref}
+\urlstyle{sf}                    % URLs in the document's sans font, not monospace
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\usepackage{array}
+\usepackage{graphicx}
+\usepackage{booktabs}            % rules for the results tables
+\usepackage{needspace}           % keeps headings with the text that follows them
+
+\definecolor{navy}{HTML}{1F3864}
+\definecolor{midgray}{HTML}{595959}
+\definecolor{hairline}{HTML}{C8C8C8}
+
+\linespread{1.10}                % comfortable executive leading
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{3.5pt}
+
+% Never strand a single line of a paragraph at the top or foot of a page.
+\widowpenalty=150
+\clubpenalty=150
+
+
+% ---------- Footer: understated, informational ----------
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\fancyfoot[L]{\sffamily\fontsize{7.5}{9}\selectfont\color{midgray}ENNACIRI \textbar\ PREDICTING U.S. BANK DISTRESS \textbar\ JULY 2026}
+\fancyfoot[R]{\sffamily\fontsize{7.5}{9}\selectfont\color{midgray}\thepage\ OF \pageref{LastPage}}
+
+% ---------- Section label: small uppercase bold sans, navy — corporate memo register ----------
+\newcommand{\sectionhead}[1]{%
+  \vspace{6pt}%
+  {\sffamily\bfseries\fontsize{9.5}{12}\selectfont\color{navy}\MakeUppercase{#1}}\par
+  \vspace{-9pt}\textcolor{hairline}{\rule{\textwidth}{0.5pt}}\par\vspace{0pt}}
+
+% Sub-label within a section
+\newcommand{\sublabel}[1]{%
+  \needspace{3\baselineskip}%
+  \vspace{3pt}{\sffamily\bfseries\fontsize{9}{11}\selectfont\color{midgray}#1}\par\vspace{2pt}}
+
+% Answer body
+\newcommand{\answer}[1]{#1\par\vspace{3pt}}
+
+% Table caption, matched to the figure caption style used in Week 3
+% A table plus its note, kept together and never split across a page.
+% #1 = the tabular block, #2 = the note beneath it.
+\newsavebox{\tablebox}
+\newenvironment{reporttable}{%
+  \par\vspace{9pt}%
+  \begin{lrbox}{\tablebox}\begin{minipage}[b]{\textwidth}}
+  {\end{minipage}\end{lrbox}%
+  \noindent\raisebox{\dp\tablebox}{\usebox{\tablebox}}\par\vspace{9pt}}
+\newcommand{\tablenote}[1]{%
+  \par\vspace{4pt}%
+  {\fontsize{8}{10.5}\selectfont\color{midgray}#1\par}}
+
+\begin{document}
+
+% ---------- Title block ----------
+\vspace*{-14pt}
+{\sffamily\fontsize{8.5}{11}\selectfont\color{midgray}MSDS 696 DATA SCIENCE PRACTICUM II \quad\textbar\quad WEEK 4 STATUS REPORT}\par\vspace{10pt}
+{\sffamily\bfseries\fontsize{21}{25}\selectfont\color{navy}Predicting U.S. Bank Distress}\par\vspace{9pt}
+{\sffamily\fontsize{9}{12}\selectfont Oussama Ennaciri \quad\textbar\quad Week 4 \quad\textbar\quad July 26, 2026}\par\vspace{5pt}
+\textcolor{navy}{\rule{\textwidth}{1.2pt}}
+
+% ---------- Project summary ----------
+\sectionhead{Project summary}
+\answer{This project builds an early-warning model that uses public FDIC and FRED quarterly data to flag which U.S.\ banks are at risk of becoming undercapitalized. The data consists of five linked FDIC tables (1.68M bank-quarter records of each bank's quarterly financial and regulatory filings) plus a FRED macro table (economic context like interest rates, unemployment, and GDP). Data preparation is complete, and a first modeling pass compares four methods against two benchmarks on 2017--2025 data the models never saw. The next step is choosing one model and tuning it.}
+
+% ---------- Milestones ----------
+\sectionhead{Milestones}
+\answer{\begin{enumerate}[topsep=1pt,itemsep=1pt,leftmargin=16pt,label=\textcolor{navy}{\bfseries\arabic*.}]
+  \item Literature review of bank failure and existing early-warning models (\textbf{DONE})
+  \item Collect the data (FDIC API, 1984 to present) (\textbf{DONE})
+  \item Understand the data through exploratory data analysis (\textbf{DONE})
+  \item Prepare the data for machine learning (\textbf{DONE})
+  \item Train and compare four candidate models (\textbf{DONE})
+\end{enumerate}}
+
+% ---------- Last week's To Do ----------
+\sectionhead{Last week's ``To Do''}
+\answer{From the Week 3 report:
+\begin{enumerate}[topsep=1pt,itemsep=1pt,leftmargin=16pt,label=\textcolor{navy}{\bfseries\arabic*.}]
+  \item Implement the time-based train/test split (\textbf{DONE})
+  \item Feature selection: filter pass, then model-based ranking (\textbf{DONE})
+\end{enumerate}}
+
+% ---------- This week's progress ----------
+\sectionhead{This week's progress}
+
+\sublabel{Target}
+\answer{The label is binary: 1 if a bank rated well or adequately capitalized falls to undercapitalized or worse within four quarters, 0 if it stays at well or adequately capitalized.}
+
+\sublabel{Features}
+\answer{108 features, 57 of them added this week, all built from fields already present in the call reports. The existing set covers capital, asset quality, loan mix, funding, earnings, size, and macro context. The new ones are the change in each core measure over the past four and eight quarters, unrealized securities losses, uninsured deposit share, and a bank's yield and funding cost relative to the median bank that quarter.}
+
+\sublabel{Split}
+\answer{Training runs 1990 to 2015, testing 2017 to 2025, with all of 2016 discarded. The gap is necessary because the label looks four quarters ahead.}
+
+\sublabel{Leakage guardrail}
+\answer{Twelve columns are excluded from the feature set: identifiers, the target, and anything only knowable after the prediction quarter, such as the NBER recession indicator, which is dated retroactively. Assertions halt the notebook if any of these rules are broken.}
+
+\sublabel{Target exceptions}
+\answer{5,617 test rows belong to banks acquired before their four-quarter window closed, so their outcome was never observed. These are excluded from scoring, the standard treatment for censored observations, with the full test set reported alongside as a sensitivity check.}
+
+\sublabel{Benchmarks and models}
+\answer{Two benchmarks. The naive benchmark flags every bank. The capital headroom benchmark ranks banks by how close their weakest capital ratio sits to its regulatory minimum, which is roughly what supervision does today without any model. Four models were tested against both.
+
+\textbf{Gradient boosting.} Can learn combined effects: falling capital matters more when bad loans are also rising. That was the main insight from Week 3, where several vitals declined together for two years before distress. It also handles blanks natively, which suits a dataset where whole columns start in different decades.
+
+\textbf{Logistic regression.} Can point to which warning signs are driving a bank toward distress and by how much, which is what an examiner will ask for. It is also what most of this literature uses: Cole \& White, SCOR, Nuxoll, and Oshinsky \& Olin.
+
+\textbf{MLP.} A neural network on the same features, one quarter at a time. Petropoulos et al.\ tested one on this problem and found it competitive with tree ensembles.
+
+\textbf{GRU.} Reads eight quarters in order rather than a single snapshot, so it sees the shape of a decline directly. Of the four, the closest structural match to the Week 3 finding.
+
+I did not tune any of them; all run at default settings to make the comparison even. Once I choose a model, I will pick its settings by scoring candidates on training years held back for that purpose, keeping whichever catches the most cases, and use the test period once at the end.}
+
+\sublabel{Measurement}
+\answer{Accuracy is not reported: at a 0.35\% base rate, predicting no distress for every bank scores 99.66\% and catches nothing, and none of the eleven papers reviewed uses it. Performance is measured with two statistics, ROC-AUC and PR-AUC, the latter also shown as a multiple of the base rate so its scale is readable. Results are then reported across a range of alert budgets.}
+
+\sublabel{Results}
+
+\begin{reporttable}
+{\fontsize{9}{11}\selectfont\renewcommand{\arraystretch}{1.15}
+\textbf{Table 1}\par\vspace{2pt}
+\textit{Ranking Quality of Each Model and Benchmark on the 2017--2025 Test Set}\par\vspace{5pt}
+\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}l c c c@{}}
+\toprule
+Model & ROC-AUC & PR-AUC & Lift \\
+\midrule
+\addlinespace[1pt]
+Naive \textit{(flag everything)}       & 0.483 & 0.004 & 1.0$\times$ \\
+Capital headroom \textit{(benchmark)}  & 0.808 & 0.065 & 18.5$\times$ \\
+Logistic regression                    & 0.766 & 0.063 & 17.9$\times$ \\
+Gradient boosting                      & 0.700 & 0.074 & 21.2$\times$ \\
+MLP                                    & 0.817 & 0.070 & 20.0$\times$ \\
+GRU                                    & 0.729 & 0.058 & 16.5$\times$ \\
+\addlinespace[1pt]
+\bottomrule
+\end{tabular*}}
+\tablenote{\textit{Note.} Test period 2017Q1--2025Q1: 160,712 bank-quarters, 563 distress cases, base rate 0.35\%. Neural network rows are means over three seeds.}
+\end{reporttable}
+
+\answer{The MLP posts the highest ROC-AUC, meaning it is best at putting troubled banks above healthy ones across the whole list, and gradient boosting the highest PR-AUC, meaning its flags carry the fewest false alarms. But the leads over the benchmark are small enough that, with only 563 distress cases to measure on, they could be due to chance.}
+
+\begin{reporttable}
+{\fontsize{9}{11}\selectfont\renewcommand{\arraystretch}{1.15}
+\textbf{Table 2}\par\vspace{2pt}
+\textit{Share of Troubled Banks Each Model Catches at Four Alert Budgets}\par\vspace{5pt}
+\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}l c c c c@{}}
+\toprule
+Model & \multicolumn{4}{c}{Alert budget \textit{(banks flagged)}} \\
+\cmidrule(l){2-5}
+ & 0.5\% & 1\% & 2\% & 5\% \\
+ & \textit{803} & \textit{1,607} & \textit{3,214} & \textit{8,035} \\
+\midrule
+\addlinespace[1pt]
+Capital headroom \textit{(benchmark)} & 18.1\% & 20.6\% & 25.0\% & 33.4\% \\
+Logistic regression                   & 19.4\% & 28.8\% & 37.3\% & 49.2\% \\
+Gradient boosting                     & 17.1\% & 19.9\% & 23.8\% & 28.2\% \\
+MLP                                   & 15.5\% & 24.2\% & 35.5\% & 52.4\% \\
+GRU                                   & 17.6\% & 22.0\% & 25.9\% & 32.7\% \\
+\addlinespace[1pt]
+\bottomrule
+\end{tabular*}}
+\end{reporttable}
+
+\answer{Each model sorts all 160,712 bank-quarters from most to least at risk. Examiners can only review so many, so the alert budget sets how far down that sorted list they go, and Table 2 counts how many of the 563 troubled banks fall inside it. Logistic regression finds more than the benchmark at every budget from 1\% upward, and the MLP does from 2\% upward. Both leads are big enough to rule out chance. Gradient boosting never beats the benchmark, and at the smallest budget of 803 banks, no model does.}
+
+% ---------- Issues & discussion ----------
+\sectionhead{Issues \& discussion}
+\answer{\begin{itemize}[topsep=1pt,itemsep=3pt,leftmargin=14pt,label=\textcolor{navy}{\footnotesize\textbullet}]
+  \item \textbf{Gradient boosting, the model I set out to defend, loses.} It was chosen because distress usually shows up in combinations of signals. It has the best PR-AUC, but it never catches more troubled banks than the capital benchmark, and at a 5\% budget it is clearly worse. Logistic regression, the simpler model it was meant to beat, wins from 1\% upward.\end{itemize}}
+
+% ---------- Next week's To Do ----------
+\sectionhead{Next week's ``To Do''}
+\answer{Carry logistic regression forward, since it catches the most troubled banks, and tune its settings on held-back training years.}
+
+% ---------- Resources ----------
+\sectionhead{Resources}
+\answer{Eleven papers reviewed, plus the regulation defining the target:
+{\fontsize{9}{11.5}\selectfont\setlength{\parskip}{3pt}\par\vspace{4pt}
+\newcommand{\refentry}[1]{\hangindent=1.6em\hangafter=1 #1\par}
+\refentry{Carmona, P., Climent, F., \& Momparler, A. (2018). Predicting failure in the U.S.\ banking sector: An extreme gradient boosting approach. \textit{International Review of Economics and Finance}. \textit{(new this week)}}
+\refentry{Chu, Frazier, Martin, Agarwal, Kuo, Northwood, Oey, Reed, Rodrigue, \& Starr. (n.d.). Dissecting depositor flight: An analysis of the spring 2023 bank failures. Federal Deposit Insurance Corporation.}
+\refentry{Cole, R. A., \& White, L. J. (2012). D\'{e}j\`{a} vu all over again: The causes of U.S.\ commercial bank failures this time around. \textit{Journal of Financial Services Research, 42}(1), 5--29.}
+\refentry{Collier, C., Forbush, S., Nuxoll, D. A., \& O'Keefe, J. (2003). The SCOR system of off-site monitoring: Its objectives, functioning, and performance. \textit{FDIC Banking Review, 15}(3).}
+\refentry{Correia, S., Luck, S., \& Verner, E. (2024). \textit{Failing banks} (Staff Report No.\ 1117). Federal Reserve Bank of New York. (Revised June 2025)}
+\refentry{Curry, T., Elmer, P., \& Fissel, G. (2004). \textit{Can the equity markets help predict bank failures?} Federal Deposit Insurance Corporation.}
+\refentry{Maechler, A., \& McDill, K. (2003). \textit{Dynamic depositor discipline in U.S.\ banks.} Federal Deposit Insurance Corporation.}
+\refentry{Martin, C., Puri, M., \& Ufier, A. (2018). \textit{Deposit inflows and outflows in failing banks: The role of deposit insurance.} Federal Deposit Insurance Corporation.}
+\refentry{Nuxoll, D. A. (2003). \textit{The contribution of economic data to bank-failure models.} Federal Deposit Insurance Corporation.}
+\refentry{Oshinsky, R., \& Olin, V. (2005). \textit{Troubled banks: Why don't they all fail?} Federal Deposit Insurance Corporation.}
+\refentry{Petropoulos, A., Siakoulis, V., Stavroulakis, E., \& Vlachogiannakis, N. (2020). Predicting bank insolvencies using machine learning techniques. \textit{International Journal of Forecasting, 36}(3), 1092--1113.}
+\refentry{Capital measures and capital category definitions, 12 C.F.R.\ \S\ 324.403 (the PCA thresholds behind the target label).}
+}}
+
+% ---------- LLM note ----------
+\vspace{2pt}
+{\small\itshape\color{midgray}\textbf{Note on LLM use:} This document was typeset in LaTeX using Claude Code, which handled the formatting, styling code, and wording polish. All content, research, and decisions are my own, and every suggested edit was reviewed and approved by me.}
+
+\end{document}

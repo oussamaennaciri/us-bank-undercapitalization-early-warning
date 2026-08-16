@@ -1,0 +1,174 @@
+\documentclass[aspectratio=169,11pt,t]{beamer}
+
+% ---------- Style: matches the Week 2 through Week 5 practice talk decks ----------
+\usepackage[T1]{fontenc}
+\usepackage{mathpazo}
+\usepackage{helvet}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usepackage{bm}
+
+% The approximately-equal sign comes from the maths font, which here is Computer
+% Modern. Beside bold Helvetica at headline size it renders thin and grey, as if it
+% were a different colour. \bm sets it in the bold series so it carries the weight of
+% the words around it. The status report defines the same macro without \bm, since its
+% body text is not bold; keeping the name identical is what lets the two documents'
+% headline strings stay byte-for-byte comparable.
+\newcommand{\apx}{\ensuremath{\bm{\approx}}}
+
+\definecolor{navy}{HTML}{1F3864}
+\definecolor{gold}{HTML}{F2C14E}
+\definecolor{midgray}{HTML}{595959}
+\definecolor{hairline}{HTML}{C8C8C8}
+\definecolor{palegray}{HTML}{BFBFBF}
+\definecolor{bench}{HTML}{9AA3AE}
+
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{itemize items}{\textcolor{navy}{\footnotesize\textbullet}}
+\setbeamercolor{normal text}{fg=black}
+\setbeamercolor{structure}{fg=navy}
+\setbeamerfont{normal text}{family=\rmfamily}
+\usefonttheme{serif}
+
+% ---------- The assertion headline ----------
+% Every slide but the title carries a full-sentence claim, not a topic label. The rule
+% for the whole deck: read the headlines top to bottom with the talk removed and the
+% argument still stands. These nine are the storyboard from the Week 6 status report,
+% unchanged, so the two documents cannot drift apart.
+%
+% The headline sits in a box of fixed height rather than taking its natural one. Five
+% of these run to two lines and the rest to one, and with the evidence \vfill-centred
+% under them a shorter headline pushed its figure up the slide: the gain curve sat 13px
+% higher than the identical chart on the slide before it, so it hopped on the one cut
+% where the room is comparing two versions of the same picture. With the block fixed at two lines'
+% worth, every rule and every figure in the deck lands at the same height.
+\newlength{\assertionblock}\setlength{\assertionblock}{34pt}
+\newcommand{\assertion}[1]{%
+  \begin{minipage}[t][\assertionblock][t]{\textwidth}%
+    % Flush left, ragged right, no hyphenation. Justified headlines stretched the first line
+    % of every two-line one to the full text width, and the new slide 6 broke "num-ber"
+    % across lines. A headline may wrap; it may not hyphenate.
+    \raggedright\hyphenpenalty=10000\exhyphenpenalty=10000%
+    {\sffamily\bfseries\fontsize{13}{16.5}\selectfont\color{navy}#1}%
+  \end{minipage}\par
+  \vspace{4pt}\textcolor{hairline}{\rule{\textwidth}{0.5pt}}\par\vspace{10pt}}
+
+% ---------- Evidence slot ----------
+% Storyboard stage: the headline is settled, the evidence under it is not. This draws
+% the empty frame and names what has to go in it, so an unfinished slide is visibly
+% unfinished rather than quietly shipping as a headline over white space.
+\newcommand{\evidenceslot}[1]{%
+  \vspace{6pt}%
+  \begin{center}
+  \begin{tikzpicture}
+    \draw[palegray,dashed,line width=0.7pt,rounded corners=2pt]
+      (0,0) rectangle (0.93\textwidth,3.6cm);
+    \node[text width=0.80\textwidth,align=center,text=midgray,font=\rmfamily\itshape\small]
+      at (0.465\textwidth,1.8cm) {#1};
+  \end{tikzpicture}
+  \end{center}}
+
+\begin{document}
+
+% ---------- 1. Title ----------
+\begin{frame}
+  \vspace{55pt}
+  {\sffamily\fontsize{8}{11}\selectfont\color{midgray}MSDS 696 DATA SCIENCE PRACTICUM II \quad\textbar\quad WEEK 6}\par\vspace{12pt}
+  {\sffamily\bfseries\fontsize{25}{30}\selectfont\color{navy}Predicting U.S. Bank Distress}\par\vspace{9pt}
+  {\fontsize{12.5}{17}\selectfont\itshape\color{midgray}A proposal for ranking which banks need examining soonest}\par\vspace{14pt}
+  {\sffamily\fontsize{9.5}{13}\selectfont Oussama Ennaciri \quad\textbar\quad August 2026}\par\vspace{6pt}
+  \textcolor{navy}{\rule{\textwidth}{1.2pt}}
+\end{frame}
+
+% ---------- 2. The answer ----------
+% The recommendation before any evidence. Slide 10 is the same instruction with the
+% evidence behind it; everything between exists to close that gap.
+\begin{frame}
+  \vspace*{10pt}
+  \assertion{Supervisors should rank the review queue with a model instead of ranking on capital}
+  \vfill
+  \centerline{\includegraphics[width=0.79\textwidth]{../figures/wk6_2_one_number.png}}
+  \vfill
+\end{frame}
+
+% ---------- 3. Situation ----------
+\begin{frame}
+  \vspace*{10pt}
+  \assertion{\apx4,900 banks file every quarter, so the review queue has to put the potentially troubled ones first}
+  \vfill
+  \centerline{\includegraphics[width=1.0\textwidth]{../figures/wk6_3_grid.png}}
+  \vfill
+\end{frame}
+
+% ---------- 4. Situation ----------
+\begin{frame}
+  \vspace*{10pt}
+  \assertion{The obvious way to rank that queue is by capital against assets, the measure the regulation itself uses}
+  \vfill
+  \centerline{\includegraphics[width=0.9\textwidth]{../figures/wk6_4_capital_ladder.png}}
+  \vfill
+\end{frame}
+
+% ---------- 5. Complication ----------
+% The whole talk turns here. Without a cost to the status quo there is no reason for
+% the room to sit through the resolution.
+\begin{frame}
+  \vspace*{10pt}
+  \assertion{Ranked by capital ratio, half the troubled banks never reach the top of the list}
+  \vfill
+  \centerline{\includegraphics[width=0.96\textwidth]{../figures/wk6_5_benchmark_alone.png}}
+  \vfill
+\end{frame}
+
+% ---------- 6. Resolution ----------
+% The model, finally named. Until this slide the talk asked the room to prefer it over the
+% capital ratio without once saying what it was; slide 5 has just shown the cost of ranking
+% on capital, so this is where the alternative gets introduced rather than asserted.
+\begin{frame}
+  \vspace*{10pt}
+  \assertion{An alternative is to rank the queue with a machine learning model trained on past filings}
+  \vfill
+  \centerline{\includegraphics[width=1.0\textwidth]{../figures/wk6_6_model.png}}
+  \vfill
+\end{frame}
+
+% ---------- 7. Resolution ----------
+\begin{frame}
+  \vspace*{10pt}
+  \assertion{The model ranks the queue better than the capital ratio}
+  \vfill
+  \centerline{\includegraphics[width=0.96\textwidth]{../figures/wk6_6_gaincurve.png}}
+  \vfill
+\end{frame}
+
+% ---------- 8. Resolution ----------
+\begin{frame}
+  \vspace*{10pt}
+  \assertion{\apx60\% of the banks the model caught got a full year of warning}
+  \vfill
+  \centerline{\includegraphics[width=1.0\textwidth]{../figures/wk6_7_warning_per_bank.png}}
+  \vfill
+\end{frame}
+
+% ---------- 9. Resolution ----------
+\begin{frame}
+  \vspace*{10pt}
+  \assertion{Every troubled bank that went on to fail was flagged first}
+  \vfill
+  \centerline{\includegraphics[width=1.0\textwidth]{../figures/wk6_8_failures_caught.png}}
+  \vfill
+\end{frame}
+
+% ---------- 10. Close ----------
+% Slide 2's instruction, now earned. End on the recommendation, not on ``any
+% questions''. The magnitude already landed on slide 7, so the last thing on screen
+% is the instruction alone.
+\begin{frame}
+  \vspace*{10pt}
+  \assertion{Rank the review queue with the model, not the capital ratio}
+  \vfill
+  \centerline{\includegraphics[width=1.0\textwidth]{../figures/wk6_9_grid_sorted.png}}
+  \vfill
+\end{frame}
+
+\end{document}

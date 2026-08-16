@@ -1,0 +1,195 @@
+\documentclass[11pt,letterpaper]{article}
+
+% ---------- Typography: serif body, sans headings (institutional memo standard) ----------
+\usepackage[margin=1.05in,top=0.95in,bottom=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{mathpazo}            % Palatino body, the classic finance-document serif
+\usepackage{helvet}              % Helvetica for headings and labels only
+\usepackage{microtype}           % refined kerning and justification
+\usepackage{xcolor}
+\usepackage[colorlinks=true,urlcolor=navy,linkcolor=navy]{hyperref}
+\urlstyle{sf}                    % URLs in the document's sans font, not monospace
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\usepackage{array}
+\usepackage{graphicx}
+\usepackage{booktabs}            % rules for the results tables
+\usepackage{needspace}           % keeps headings with the text that follows them
+\usepackage{float}
+
+\definecolor{navy}{HTML}{1F3864}
+\definecolor{midgray}{HTML}{595959}
+\definecolor{hairline}{HTML}{C8C8C8}
+
+\linespread{1.10}                % comfortable executive leading
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{3.5pt}
+
+% Never strand a single line of a paragraph at the top or foot of a page.
+\widowpenalty=10000
+\clubpenalty=10000
+
+
+% ---------- Footer: understated, informational ----------
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\fancyfoot[L]{\sffamily\fontsize{7.5}{9}\selectfont\color{midgray}ENNACIRI \textbar\ PREDICTING U.S. BANK DISTRESS \textbar\ AUGUST 2026}
+\fancyfoot[R]{\sffamily\fontsize{7.5}{9}\selectfont\color{midgray}\thepage\ OF \pageref{LastPage}}
+
+% ---------- Section label: small uppercase bold sans, navy, corporate memo register ----------
+\newcommand{\sectionhead}[1]{%
+  \needspace{5\baselineskip}\vspace{6pt}%
+  {\sffamily\bfseries\fontsize{9.5}{12}\selectfont\color{navy}\MakeUppercase{#1}}\par
+  \vspace{-9pt}\textcolor{hairline}{\rule{\textwidth}{0.5pt}}\par\vspace{0pt}}
+
+% Sub-label within a section
+\newcommand{\sublabel}[1]{%
+  \needspace{3\baselineskip}%
+  \vspace{3pt}{\sffamily\bfseries\fontsize{9}{11}\selectfont\color{midgray}#1}\par\vspace{2pt}}
+
+% Answer body
+\newcommand{\answer}[1]{#1\par\vspace{3pt}}
+
+% A table plus its note, kept together and never split across a page.
+\newsavebox{\tablebox}
+\newenvironment{reporttable}{%
+  \par\vspace{9pt}%
+  \begin{lrbox}{\tablebox}\begin{minipage}[b]{\textwidth}}
+  {\end{minipage}\end{lrbox}%
+  \noindent\raisebox{\dp\tablebox}{\usebox{\tablebox}}\par\vspace{9pt}}
+\newcommand{\tablenote}[1]{%
+  \par\vspace{4pt}%
+  {\fontsize{8}{10.5}\selectfont\color{midgray}#1\par}}
+
+% A figure in APA order, kept together and never split: number in bold, italic title
+% beneath it, then the image, then the note. The claim used to be baked into the PNG
+% as a headline; it lives here now so the number, title and note read as one block.
+% #1 = figure number, #2 = title, #3 = image file, #4 = the note beneath it.
+\newsavebox{\figbox}
+\newcommand{\reportfigure}[4]{%
+  \begin{lrbox}{\figbox}\begin{minipage}[b]{\textwidth}%
+    {\fontsize{9}{11}\selectfont\textbf{#1}}\par\vspace{2pt}%
+    {\fontsize{9}{11.5}\selectfont\itshape #2}\par\vspace{6pt}%
+    \centerline{\includegraphics[width=0.94\textwidth]{#3}}\par\vspace{4pt}%
+    {\fontsize{8}{10.5}\selectfont\color{midgray}#4\par}%
+  \end{minipage}\end{lrbox}%
+  \par\vspace{7pt}\noindent\usebox{\figbox}\par\vspace{7pt}}
+
+\begin{document}
+
+% ---------- Title block ----------
+\vspace*{-14pt}
+{\sffamily\fontsize{8.5}{11}\selectfont\color{midgray}MSDS 696 DATA SCIENCE PRACTICUM II \quad\textbar\quad WEEK 5 STATUS REPORT}\par\vspace{10pt}
+{\sffamily\bfseries\fontsize{21}{25}\selectfont\color{navy}Predicting U.S. Bank Distress}\par\vspace{9pt}
+{\sffamily\fontsize{9}{12}\selectfont Oussama Ennaciri \quad\textbar\quad Week 5 \quad\textbar\quad August 2, 2026}\par\vspace{5pt}
+\textcolor{navy}{\rule{\textwidth}{1.2pt}}
+
+% ---------- Project summary ----------
+\sectionhead{Project summary}
+\answer{This project builds an early-warning model that uses public FDIC and FRED quarterly data to flag which U.S.\ banks are at risk of becoming undercapitalized. The data consists of five linked FDIC tables (1.68M bank-quarter records of each bank's quarterly financial and regulatory filings) plus a FRED macro table. Data preparation and model comparison are complete. This week switched the critical-undercapitalization test from book equity to Tier 1 capital, the measure the regulation names, re-ran every model against the rebuilt target, and built the executive visuals that carry the result.}
+
+% ---------- Milestones ----------
+\sectionhead{Milestones}
+\answer{\begin{enumerate}[topsep=1pt,itemsep=1pt,leftmargin=16pt,label=\textcolor{navy}{\bfseries\arabic*.}]
+  \item Literature review of bank failure and existing early-warning models (\textbf{DONE})
+  \item Collect the data (FDIC API, 1984 to present) (\textbf{DONE})
+  \item Understand the data through exploratory data analysis (\textbf{DONE})
+  \item Prepare the data for machine learning (\textbf{DONE})
+  \item Train and compare four candidate models (\textbf{DONE})
+  \item Move the critical-undercapitalization test to the Tier 1 capital basis and re-run the comparison (\textbf{DONE})
+  \item Build the executive visuals (\textbf{DONE})
+\end{enumerate}}
+
+% ---------- Last week's To Do ----------
+\sectionhead{Last week's ``To Do''}
+\answer{From the Week 4 report: \textit{carry logistic regression forward and tune its settings on held-back training years.}
+
+\textbf{Replaced by the target rebuild.} Further review of 12 C.F.R.\ \S\ 324.403 confirmed the critical-undercapitalization test must read Tier 1 capital rather than book equity. Rebuilding it reversed the Week 4 ranking: gradient boosting, the original first-choice model, now wins on every measure.}
+
+% ---------- This week's progress ----------
+\sectionhead{This week's progress}
+
+\sublabel{The critical-undercapitalization test}
+\answer{Under 12 C.F.R.\ \S\ 324.403, a bank lands in the worst capital category when its tangible equity falls to 2\% of assets or below. The regulation measures that equity as \textbf{Tier 1 capital}; my version used \textbf{book equity}. The four capital tiers above it already used the risk-based ratios, so I switched this one to Tier 1 as well.}
+
+\sublabel{Re-run results}
+
+\begin{reporttable}
+{\fontsize{9}{11}\selectfont\renewcommand{\arraystretch}{1.15}
+\textbf{Table 1}\par\vspace{2pt}
+\textit{Ranking performance of each model and benchmark on the 2017--2025 test set}\par\vspace{5pt}
+\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}l c c@{}}
+\toprule
+Model & PR-AUC & ROC-AUC \\
+\midrule
+\addlinespace[1pt]
+\textbf{Gradient boosting}             & \textbf{0.219} & \textbf{0.919} \\
+Capital headroom \textit{(benchmark)}  & 0.128 & 0.868 \\
+GRU                                    & 0.122 & 0.909 \\
+MLP                                    & 0.086 & 0.883 \\
+Logistic regression                    & 0.031 & 0.900 \\
+\addlinespace[1pt]
+\bottomrule
+\end{tabular*}}
+\tablenote{\textit{Note.} Test period 2017Q1--2025Q1: 161,117 bank-quarters (one bank in one quarter), 160 of them cases, a base rate of 0.10\%. PR-AUC scores how well a model ranks the top of the list; ROC-AUC the whole list. Both run 0 to 1.}
+\end{reporttable}
+
+\answer{Gradient boosting leads on both measures. It scores all 161,117 filings and sorts them riskiest first; a PR-AUC of 0.219, \textbf{221 times} what random ordering would give, means the troubled filings land near the top of that sorted list.}
+
+\sublabel{Executive visuals}
+\answer{The model is ahead at every review budget, not only at the one I chose. Whatever workload supervision can afford, ranking by the model surfaces more trouble than ranking by the capital ratio, so the case does not rest on picking a threshold that flatters it.}
+
+\reportfigure{Figure 1}{The model ranks risky banks better than the currently used benchmark}{../figures/final_1_gaincurve.png}{%
+\textit{Note.} Both scores sort all 161,117 filings worst-first, 2017--2025. The horizontal axis is how far down that sorted list an examiner reads; the vertical axis is the share of the 160 cases found. Drawn to 5\%, past which both curves are flat.}
+
+\answer{A warning only helps if it arrives while there is still time to act on it. Most of these arrive a full year out, which is long enough to schedule an examination rather than react to one.}
+
+\reportfigure{Figure 2}{Three in five of the banks it caught were flagged a full year ahead}{../figures/final_2_warning_per_bank.png}{%
+\textit{Note.} The 33 troubled banks the model caught at the 1\% budget, grouped by how far ahead its earliest flag came.}
+
+\answer{Undercapitalization is the event the model predicts; failure is what supervisors want to prevent. For the ten banks where both happened the warning came first every time.}
+
+\reportfigure{Figure 3}{Every troubled bank that went on to fail was on the watchlist first}{../figures/final_3_failures_caught.png}{%
+\textit{Note.} Each bar runs from the model's first flag to the day the bank failed, so its length is the warning.}
+
+% ---------- Issues & discussion ----------
+\sectionhead{Issues \& discussion}
+\answer{\begin{itemize}[topsep=1pt,itemsep=4pt,leftmargin=14pt,label=\textcolor{navy}{\footnotesize\textbullet}]
+  \item \textbf{Week 4's tables are superseded.} They used the old test and should not be cited.
+  \item \textbf{The model did not see Silicon Valley Bank coming, and is not built to.} The warning was in the filings, since SVB's unrealized securities losses exceeded its book equity, but its regulatory capital never fell, so the event this model predicts never occurred. Large banks fail through deposit runs, which unfold between filing dates, and catching that would require a separate model built on funding data.
+  \item \textbf{The test set is thin.} 160 cases from 44 banks across nine years, against 161,117 filings.
+\end{itemize}}
+
+% ---------- Next week's To Do ----------
+\sectionhead{Next week's ``To Do''}
+\answer{\begin{enumerate}[topsep=1pt,itemsep=1pt,leftmargin=16pt,label=\textcolor{navy}{\bfseries\arabic*.}]
+  \item Tune gradient boosting on held-back training years, then use the test period once at the end.
+  \item Explore a second model, built on funding data, to cover the failures this one cannot see: the large banks that go through deposit runs rather than capital erosion.
+\end{enumerate}}
+
+% ---------- Resources ----------
+\sectionhead{Resources}
+\answer{Eleven papers reviewed, plus the regulations defining the target:
+{\fontsize{8.8}{10.8}\selectfont\setlength{\parskip}{2pt}\par\vspace{3pt}
+\newcommand{\refentry}[1]{\hangindent=1.6em\hangafter=1 #1\par}
+\refentry{Carmona, P., Climent, F., \& Momparler, A. (2018). Predicting failure in the U.S.\ banking sector: An extreme gradient boosting approach. \textit{International Review of Economics and Finance}.}
+\refentry{Chu, Frazier, Martin, Agarwal, Kuo, Northwood, Oey, Reed, Rodrigue, \& Starr. (n.d.). Dissecting depositor flight: An analysis of the spring 2023 bank failures. Federal Deposit Insurance Corporation.}
+\refentry{Cole, R. A., \& White, L. J. (2012). D\'{e}j\`{a} vu all over again: The causes of U.S.\ commercial bank failures this time around. \textit{Journal of Financial Services Research, 42}(1), 5--29.}
+\refentry{Collier, C., Forbush, S., Nuxoll, D. A., \& O'Keefe, J. (2003). The SCOR system of off-site monitoring: Its objectives, functioning, and performance. \textit{FDIC Banking Review, 15}(3).}
+\refentry{Correia, S., Luck, S., \& Verner, E. (2024). \textit{Failing banks} (Staff Report No.\ 1117). Federal Reserve Bank of New York. (Revised June 2025)}
+\refentry{Curry, T., Elmer, P., \& Fissel, G. (2004). \textit{Can the equity markets help predict bank failures?} Federal Deposit Insurance Corporation.}
+\refentry{Maechler, A., \& McDill, K. (2003). \textit{Dynamic depositor discipline in U.S.\ banks.} Federal Deposit Insurance Corporation.}
+\refentry{Martin, C., Puri, M., \& Ufier, A. (2018). \textit{Deposit inflows and outflows in failing banks: The role of deposit insurance.} Federal Deposit Insurance Corporation.}
+\refentry{Nuxoll, D. A. (2003). \textit{The contribution of economic data to bank-failure models.} Federal Deposit Insurance Corporation.}
+\refentry{Oshinsky, R., \& Olin, V. (2005). \textit{Troubled banks: Why don't they all fail?} Federal Deposit Insurance Corporation.}
+\refentry{Petropoulos, A., Siakoulis, V., Stavroulakis, E., \& Vlachogiannakis, N. (2020). Predicting bank insolvencies using machine learning techniques. \textit{International Journal of Forecasting, 36}(3), 1092--1113.}
+\refentry{Capital measures and capital category definitions, 12 C.F.R.\ \S\ 324.403 (the PCA thresholds behind the target label, and the Tier 1 basis for the 2\% tangible-equity test).}
+}}
+
+% ---------- LLM note ----------
+\vspace{2pt}
+{\small\itshape\color{midgray}\textbf{Note on LLM use:} This document was typeset in LaTeX using Claude Code, which handled the formatting, styling code, and wording polish. All content, research, and decisions are my own, and every suggested edit was reviewed and approved by me.}
+
+\end{document}
