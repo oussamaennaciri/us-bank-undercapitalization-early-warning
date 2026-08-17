@@ -1,105 +1,105 @@
 # Predicting U.S. Bank Distress
 
-An early-warning model that flags which U.S. banks are at risk of becoming
-**undercapitalized**, and how soon — while the bank can still take corrective action.
+A model that flags which U.S. banks are heading for undercapitalization, using the quarterly
+reports every bank files with the FDIC.
+
+**The recommendation:** supervisors should rank the review queue with the model instead of
+ranking on the capital ratio alone. At the same workload it finds 30% more troubled banks.
 
 MSDS 696 Data Science Practicum II · Regis University · Oussama Ennaciri
 
 ---
 
-## The question
+## The problem
 
-The 2023 failures of Silicon Valley Bank and First Republic were visible in public
-regulatory data before they happened. This project asks: **which banks are at risk of a
-capital-tier drop, and how soon?**
+About 4,900 banks file every quarter. Roughly 5 of them are heading for trouble. Every bank
+gets examined eventually, but only every 12 to 18 months, so the order matters: a bank
+reviewed sooner has more options left.
 
-The answer changes what two groups do. A bank's risk committee can raise capital, cut
-dividends, restructure its securities portfolio, or pursue a merger. A regulator (FDIC,
-OCC, Federal Reserve, state examiners) can escalate examinations before options narrow.
+The obvious way to order that queue is by capital against assets, which is the measure the
+regulation itself uses. That finds half of them.
 
 ## The target
 
-A **Prompt Corrective Action** tier drop — the regulatory capital categories defined in
-[12 CFR 324.403](https://www.law.cornell.edu/cfr/text/12/324.403) and its predecessors.
+A healthy bank falls to undercapitalized or worse within the next four quarters.
 
-`onset_4q` = 1 if a currently healthy (well or adequately capitalized) bank falls to
-undercapitalized-or-worse within the following four quarters.
-
-The thresholds switch with the rules actually in force at each date:
-
-| Period | Rule |
-|---|---|
-| 1990–2014 | Original FDICIA — 3 ratios |
-| 2015+ | Basel III — adds common equity tier 1 (`CET1`), raises Tier 1 cutoffs |
-| 2020+ | Community Bank Leverage Ratio (`CBLR`) overlay for qualifying small banks |
-
-Full derivation and sources: [`literature/pca_label_definition.md`](literature/pca_label_definition.md)
+The capital tiers come from [12 CFR 324.403](https://www.law.cornell.edu/cfr/text/12/324.403).
+The thresholds switch with the rules in force at each date: original FDICIA before 2015,
+Basel III after, and a Community Bank Leverage Ratio overlay from 2020.
 
 ## The data
 
 | Source | What |
 |---|---|
-| [FDIC BankFind API](https://banks.data.fdic.gov/docs/) | Quarterly filings for every insured institution — financials, institutions, failures, history |
-| [FRED](https://fred.stlouisfed.org/) | Macroeconomic context — rates, unemployment, GDP, housing, stress indices |
+| [FDIC BankFind API](https://banks.data.fdic.gov/docs/) | Quarterly filings for every insured bank |
+| [FRED](https://fred.stlouisfed.org/) | Rates, unemployment, GDP, housing, stress indices |
 
-**Modeling panel:** 1,258,888 bank-quarter rows, 1990Q1–2026Q1, 66 columns.
-The target is rare — **0.73%** of healthy bank-quarters cross into distress within a year.
+109 inputs per bank-quarter: 98 from the bank's own filing, 11 national economic series.
 
-Data files are not in this repo (16 GB). Rebuild them with the scripts below.
+Split by time, with a gap year, because the label looks four quarters ahead:
+
+| | Period | Rows | Cases |
+|---|---|---|---|
+| Train | 1990Q1 to 2015Q4 | 1,026,797 | 8,414 |
+| Gap | all of 2016 | dropped | |
+| Test | 2017Q1 to 2025Q1 | 161,117 scored | 160 |
+
+The data files are not in this repo (16 GB). They are pulled straight from the two public
+APIs above.
+
+## The method
+
+Four candidates on the same rows, no tuning, so the comparison is even. Gradient boosting
+won and is the model in the results.
+
+| Model | PR-AUC |
+|---|---|
+| **Gradient boosting** | **0.219** |
+| Capital ratio (benchmark) | 0.128 |
+| GRU | 0.122 |
+| MLP | 0.086 |
+| Logistic regression | 0.031 |
+
+## The result
+
+Reading the riskiest 1% of filings, the model finds 65% of troubled banks against 50% for
+the capital ratio. It leads at every depth, not just that one.
+
+Of the banks it caught, about 60% were flagged a full year before they crossed. All ten
+banks in the test window that became undercapitalized and later failed were flagged first.
+
+## What it cannot do
+
+Most of what it flags is a false alarm: at the 1% depth, 93 in 100 never cross. The capital
+ratio is 95 in 100 at the same depth.
+
+It cannot detect a sudden bank run. It reads quarterly filings, and a run happens between
+them.
 
 ## Repo layout
 
 ```
-scripts/          FDIC and FRED download scripts
 notebooks/
-  feature_selection.ipynb   Build the panel: joins, 1990 cutoff, PCA tier, onset_4q label
-  cleaning.ipynb            Feature dictionary, data-quality concerns, flags
-  eda.ipynb                 14 charts
-  modeling.ipynb            Leakage guardrail, train/test split, models
-  data_concerns.md          Running log of data issues, 5 of 8 resolved
-literature/       Paper notes, feature synthesis, regulatory label definition
-data_reference/   FDIC API schemas
-Week 1-4/         Weekly deliverables (proposal, status reports, talk scripts)
+  feature_selection.ipynb   Build the panel, capital tiers, the label
+  cleaning.ipynb            Feature dictionary, data-quality flags
+  feature_engineering.ipynb Trend and funding features
+  eda.ipynb                 Exploratory charts
+  modeling.ipynb            Leakage guardrail, split, models, results
+reports/          Written deliverables (PDF)
+presentations/    Slide decks (PDF)
 ```
 
-## Rebuilding the data
-
-```bash
-export FDIC_API_KEY=...    # https://banks.data.fdic.gov/
-export FRED_API_KEY=...    # https://fred.stlouisfed.org/docs/api/api_key.html
-
-python scripts/fdic_download.py
-python scripts/fred_download.py
-```
-
-Then run the notebooks in order: `feature_selection` → `cleaning` → `eda` → `modeling`.
-
-## Two findings so far
-
-**1. The road to trouble.** Banks that later became undercapitalized decline across all six
-core vitals for roughly two years beforehand, while matched healthy banks tracked over the
-same calendar quarters stay flat. The decline is bank-specific, not macro-driven.
-
-**2. Capital ratios alone missed SVB.** Silicon Valley Bank's total risk-based capital ratio
-was ~16% — comfortably "well capitalized" — the quarter before it failed. 88 of 1,360 failed
-banks looked healthy at their last filing. The warning was there, but in the funding columns:
-uninsured deposits near 86%, deposit growth flipping to sustained outflows, and (tested
-against a same-size healthy peer) held-to-maturity losses at 7.5% of assets versus 1.4%.
-
-That gap is what the current work addresses — trend and funding-stability features, not just
-the classic capital ratios.
+Run the notebooks in order: `feature_selection`, `cleaning`, `feature_engineering`, `eda`,
+`modeling`.
 
 ## A note on leakage
 
-The label looks four quarters into the future, which makes this problem unusually easy to
-leak. `modeling.ipynb` opens with a guardrail that is enforced, not documented:
-
-- a drop list covering identifiers, label components, and two flags built from future outcomes
-- a time-based split — train 1990Q1–2015Q4, a four-quarter gap, test 2017Q1–2025Q1
-- assertions that fail loudly on overlapping windows, leaked columns, or a rare-event rate
-  that has been quietly rebalanced
+A label that looks four quarters ahead is easy to leak. `modeling.ipynb` opens with a
+guardrail that is enforced rather than described: a drop list covering identifiers and label
+components, the time split with its gap year, and assertions that fail loudly on overlapping
+windows, leaked columns, or a rare-event rate that has been quietly rebalanced.
 
 ## Note on LLM use
 
 LaTeX typesetting, code review, and wording polish were done with Claude Code. All content,
-research, and decisions are my own; every suggested edit was reviewed and approved.
+research, and decisions are my own, and every suggested edit was reviewed and approved.

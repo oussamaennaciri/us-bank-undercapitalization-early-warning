@@ -54,3 +54,19 @@ figures/
 Week 4/
 Week 5/
 Week 6/
+Week 7/
+
+# ---- LaTeX sources (the PDFs are the deliverable) --------------------------
+*.tex
+Week 1/
+Week 2/
+Week 3/
+scripts/
+literature/
+data_reference/
+assets/
+notebooks/data_concerns.md
+notebooks/Finalcharts.ipynb
+notebooks/event_visuals.ipynb
+notebooks/final_visualizations.ipynb
+notebooks/visuals_experimentation.ipynb
