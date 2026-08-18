@@ -79,6 +79,9 @@ them.
 ## Repo layout
 
 ```
+scripts/
+  fdic_download.py          Pull the FDIC data (financials, institutions, failures, history)
+  fred_download.py          Pull the FRED macro data
 notebooks/
   feature_selection.ipynb   Build the panel, capital tiers, the label
   cleaning.ipynb            Feature dictionary, data-quality flags
@@ -87,10 +90,12 @@ notebooks/
   modeling.ipynb            Leakage guardrail, split, models, results
 reports/          Written deliverables (PDF)
 presentations/    Slide decks (PDF)
+requirements.txt  Package versions used for the notebooks above
 ```
 
-Run the notebooks in order: `feature_selection`, `cleaning`, `feature_engineering`, `eda`,
-`modeling`.
+Pull the data first: `fdic_download.py`, then `fred_download.py` (each reads its API key from
+an environment variable or a local `key.txt`, never committed). Then run the notebooks in
+order: `feature_selection`, `cleaning`, `feature_engineering`, `eda`, `modeling`.
 
 ## A note on leakage
 
@@ -98,6 +103,24 @@ A label that looks four quarters ahead is easy to leak. `modeling.ipynb` opens w
 guardrail that is enforced rather than described: a drop list covering identifiers and label
 components, the time split with its gap year, and assertions that fail loudly on overlapping
 windows, leaked columns, or a rare-event rate that has been quietly rebalanced.
+
+## Defensible analysis checklist
+
+The course rubric asks for five things to be true about this work, checked here rather than
+in a separate document, so it can be defended live.
+
+1. **Problem framing and relevance.** Stated above: the problem, the target, and the
+   regulation it is tied to.
+2. **Data appropriateness and prep.** Two public sources, sourced in `scripts/`, cleaned with
+   documented quality checks in `cleaning.ipynb`.
+3. **Methodology rigor and justification.** Four models compared on identical rows with no
+   tuning. The choice of model and every other fork is explained in
+   `reports/decisions-and-reflection.pdf`.
+4. **Defensibility of conclusions.** Measured against a real benchmark, the capital ratio, and
+   the "What it cannot do" section above states the limits plainly.
+5. **Reproducibility and code.** The full path from raw API pull to final result is in this
+   repo: `scripts/` gets the data, `notebooks/` process it in order, and `requirements.txt`
+   pins the packages used.
 
 ## Note on LLM use
 

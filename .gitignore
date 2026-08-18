@@ -1,5 +1,6 @@
 # ---- Secrets ----------------------------------------------------------------
 scripts/key.txt
+scripts/download_log.txt
 .env
 
 # ---- Data (16 GB; all of it is re-downloadable via scripts/) ----------------
@@ -61,7 +62,6 @@ Week 7/
 Week 1/
 Week 2/
 Week 3/
-scripts/
 literature/
 data_reference/
 assets/
